@@ -1,45 +1,50 @@
 package com.example.zona_libros.navigation
 
-import android.health.connect.datatypes.ExerciseRoute
-import android.widget.MediaController
+// --- Importaciones de Jetpack Compose y dependencias de Navegación ---
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.miprimeraapp.views.LoginScreen
-import com.example.zona_libros.ui.screens.*
+import com.example.zona_libros.views.LoginScreen
+import com.example.zona_libros.views.RecoverPasswordScreen
+import com.example.zona_libros.views.HomeScreen
+import com.example.zona_libros.views.RegisterScreen
 
-sealed class AppScreens(val route: String) {
-    object Inicio : AppScreens ("inicio_screen")
-    object Login : AppScreens ("login_screen")
-    object Register : AppScreens ("register_screen")
-    object Recover : AppScreens ("recover_screen")
-}
-
+// Función Composable que define el grafo de navegación de la aplicación
 @Composable
 fun AppNavigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = AppScreens.Inicio.route) {
+    NavHost(
+        navController = navController,
+        startDestination = "login" //  Pantalla inicial
+    ) {
 
-        composable(AppScreens.Inicio.route){
-            InicioScreen(navController)
-        }
-
-        composable(AppScreens.Login.route){
+        // 1. Ruta de Login
+        composable("login") {
             LoginScreen(navController)
         }
 
-        composable(AppScreens.Register.route){
+        // 2. Ruta de Registro
+        composable("registro") {
             RegisterScreen(navController)
         }
 
-        composable(AppScreens.Recover.route){
+        // 3. Ruta de Recuperación de Contraseña
+        composable("recuperarContrasena") {
             RecoverPasswordScreen(navController)
         }
 
-
+        // 4. Ruta de Home (Acceso post-login exitoso)
+        composable("home") {
+            HomeScreen(navController)
+        }
     }
 }
+// Función auxiliar necesaria para la estructura del código
+fun composable(string: String, function: @Composable () -> Unit) {}
 
+
+}
 
 
 

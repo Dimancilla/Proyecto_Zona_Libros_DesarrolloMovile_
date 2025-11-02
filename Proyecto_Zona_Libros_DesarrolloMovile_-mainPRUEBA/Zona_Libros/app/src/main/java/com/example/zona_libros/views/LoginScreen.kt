@@ -1,187 +1,140 @@
-package com.example.miprimeraapp.views
+package com.example.zona_libros.views
+// --- Importaciones de Jetpack Compose y dependencias ---
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.miprimeraapp.R // Asegúrate de que este paquete sea correcto
-import com.example.miprimeraapp.viewModel.LoginViewModel // Asumiendo que el ViewModel está aquí
-import androidx.compose.ui.Alignment
+import com.example.zona_libros.viewModel.LoginViewModel
 
-// Clase para la pantalla de Login de ZONALIBROS
-class LoginScreen(private val navController: NavHostController? = null) {
+// Función Composable principal para la interfaz de login
+@Composable
+fun LoginScreen(navController: NavHostController) {
+    // Inicializa o recupera el ViewModel
 
-    // Composable principal para la interfaz de login
-    @Composable
-    fun login(){
-        // Traemos el ViewModel (la lógica)
-        val viewModel = viewModel<LoginViewModel>()
-        val correo = viewModel.loginViewModel.correo
-        val contrasena = viewModel.loginViewModel.contrasena
-        val nav = viewModel.deberiamosNavegar
+    val viewModel: LoginViewModel = viewModel()
 
-        // 1. Manejo de Navegación: Si el login es exitoso
-        if(nav == true){
-            // Navegamos a la pantalla "home" después del login exitoso
-            navController?.navigate("home")
-            viewModel.cambiarEstadoNavegacion() // Reseteamos el estado para evitar re-navegación
-        }
+    // Obtiene los estados reactivos (MutableState) desde el ViewModel
+    val email = viewModel.email.value
+    val password = viewModel.password.value
+    val error = viewModel.errorMessage.value
 
-        // 2. Manejo de Alertas (Usando las funciones del ejemplo original)
-        // Lógica simplificada de visualización de Alertas/Confirmaciones aquí...
-        if(viewModel.mostrarAlerta == true){
-            // Aquí iría la llamada a showAlert, pero se omite para simplicidad y mantener el foco en la UI
-        }
-        // ... (Omitimos el resto del manejo de alertas y confirmaciones por simplicidad) ...
-
-        // Estructura de la pantalla
-        Column (
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(32.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally // Centramos los elementos
+    // --- Lógica de Manejo de Errores con Alerta (Pop-up) ---
+    // Muestra la alerta si existe un mensaje de error y no es la señal de éxito ("OK")
+    if (error.isNotEmpty() && error != "OK") {
+        Alert(
+            message = error, // Muestra el mensaje de error de credenciales
+            onDismiss = { viewModel.errorMessage.value = "" } // Borra el error al cerrar la alerta
         )
-        {
-            Spacer(modifier = Modifier.height(60.dp))
+    }
 
-            Text(
-                text = "ZONALIBROS",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary // Usar el color principal del tema
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+    // --- Lógica de Navegación Post-Éxito ---
+    // Si el error es "OK", significa que el login fue exitoso.
 
-            Text(
-                text = "Inicio de Sesión",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(40.dp))
-
-
-            // Campo de Correo Electrónico
-            TextField(
-                value = correo,
-                onValueChange = { viewModel.cambioCorreo(it) }, // Llama a la función del ViewModel
-                label = { Text("Correo Electrónico") },
-                modifier = Modifier.fillMaxWidth(),
-                // Aquí deberíamos mostrar un error si viewModel.loginViewModel.correoError no es null
-                // Simplificamos omitiendo el icono y el error visual directo en el TextField.
-            )
-            // Si hay un error de validación, lo mostramos debajo (Retroalimentación visual)
-            if (viewModel.loginViewModel.correoError != null) {
-                Text(
-                    text = viewModel.loginViewModel.correoError!!,
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                )
-            }
-
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Campo de Contraseña
-            TextField(
-                value = contrasena,
-                onValueChange = { viewModel.cambioContrasena(it) }, // Llama a la función del ViewModel
-                label = { Text("Contraseña") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation()
-            )
-            // Si hay un error de validación, lo mostramos debajo
-            if (viewModel.loginViewModel.contrasenaError != null) {
-                Text(
-                    text = viewModel.loginViewModel.contrasenaError!!,
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                )
-            }
-
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Botón de Iniciar Sesión
-            Button(
-                onClick = { viewModel.auth() }, // Llama a la función de autenticación del ViewModel
-                modifier = Modifier.fillMaxWidth().height(50.dp)
-            )
-            {
-                Text("INICIAR SESIÓN", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Enlace de Recuperación de Contraseña (Punto clave del caso 2: Mejorar el acceso)
-            Text(
-                text = "¿Olvidaste tu Contraseña?",
-                color = Color.Blue,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.clickable {
-                    // TODO: Navegar a la pantalla de Recuperación de Contraseña
-                    navController?.navigate("recuperarContrasena")
-                }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Enlace a la pantalla de Registro
-            Text(
-                text = "Crear Cuenta (Registrar)",
-                color = Color.DarkGray,
-                modifier = Modifier.clickable {
-                    // TODO: Navegar a la pantalla de Registro
-                    navController?.navigate("registro")
-                }
-            )
-
-            // Si hay un error de credenciales general (ej: usuario o contraseña incorrectos)
-            if (viewModel.loginViewModel.errorCredenciales != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = viewModel.loginViewModel.errorCredenciales!!,
-                    color = Color.Red,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-            }
-
+    if (error == "OK") {
+        navController.navigate("home") { // Navega a la pantalla principal "home"
+            // Borra la pantalla de 'login' de la pila de navegación para que el usuario no pueda volver con el botón "Atrás"
+            popUpTo("login") { inclusive = true }
         }
+        viewModel.errorMessage.value = "" // Resetea el estado de error
+    }
+
+    // Estructura de la pantalla - Contenedor principal
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Título de la Tienda
+        Text(
+            text = "ZONALIBROS",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Email
+        OutlinedTextField(
+            value = email,
+            onValueChange = { viewModel.email.value = it },
+            label = { Text("Correo Electrónico") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Contraseña
+        OutlinedTextField(
+            value = password,
+            onValueChange = { viewModel.password.value = it },
+            label = { Text("Contraseña") },
+            visualTransformation = PasswordVisualTransformation(),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Botón de Iniciar Sesión
+        Button(
+            onClick = { viewModel.login() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Iniciar Sesión")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Enlace de Recuperación de Contraseña
+        Text(
+            text = "¿Olvidaste tu contraseña?",
+            color = Color.Blue,
+            modifier = Modifier.clickable {
+                navController.navigate("recuperarContrasena")
+            }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Enlace a la pantalla de Registro
+        Text(
+            text = "Crear Cuenta (Registrar)",
+            color = Color.DarkGray,
+            modifier = Modifier.clickable {
+                navController.navigate("registro")
+            }
+        )
     }
 }
 
 
-@Preview(showBackground = true)
+
+
+// Función Composable para mostrar un Diálogo de Alerta
 @Composable
-fun verLogin(){
-    // Para el preview, solo llamamos a la función de la clase
-    LoginScreen().login()
+fun Alert(message: String, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Aceptar")
+            }
+        },
+        title = { Text("Atención") },
+        text = { Text(message) }
+    )
 }
